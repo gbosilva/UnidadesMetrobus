@@ -1,6 +1,12 @@
 #Server
 server:
   port: 8091
+  ssl:
+    key-store: classpath:keystore.p12
+    key-store-password: metrobus
+    key-store-type: PKCS12
+    key-alias: metrobus
+    key-password: metrobus
 
 #Spring
 spring:
