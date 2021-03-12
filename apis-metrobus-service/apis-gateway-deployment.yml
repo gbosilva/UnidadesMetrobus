@@ -1,0 +1,35 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: apis-metrobus-deployment
+  namespace: default
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: apis-metrobus-deployment
+  template:
+    metadata:
+      labels:
+        app: apis-metrobus-deployment
+    spec:
+      nodeName: nodo-1
+      containers:
+      - name: apis-metrobus-deployment
+        image: acr/apis-metrobus-service-image:1.0.1
+        ports:
+        - containerPort: 8091
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: apis-metrobus-deployment
+  namespace: default
+spec:
+  type: LoadBalancer
+  selector:
+    app: apis-metrobus-deployment
+  ports:
+  - port: 8091
+    targetPort: 8091
+    nodePort: 30891
