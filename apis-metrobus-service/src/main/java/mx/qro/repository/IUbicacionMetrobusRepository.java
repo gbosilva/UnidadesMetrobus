@@ -75,5 +75,16 @@ public interface IUbicacionMetrobusRepository extends CrudRepository<UbicacionMe
 			+ "WHERE a IS NOT NULL "
 			+ "GROUP BY a.idAlcaldia")
 	List<Alcaldia> encuentraAlcaldiasDisponibles();
-
+	
+	/**
+	 * Metodo para buscar alcaldias disponibles, es decir,
+	 * busca todas las ubicaciones y revisa cuales ya tienen una alcaldia
+	 * asignada 
+	 * @return Lista de alcaldias
+	 */
+	@Query(value = "SELECT COUNT(u) FROM UbicacionMetrobus u "
+			+ "JOIN u.alcaldia a "
+			+ "WHERE a.idAlcaldia =  :id")
+	Integer cuentaAlcaldias(@Param("id") Integer id);
+	
 }

@@ -15,13 +15,13 @@ import mx.qro.service.IDireccionAlcaldiaService;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest
-public class ApiTest {
+public class ConsumeApiTest {
 
 	/**
 	 * Variable LOGGER de tipo Logger
 	 */
 	public static final Logger LOG = 
-			LoggerFactory.getLogger(ApiTest.class);
+			LoggerFactory.getLogger(ConsumeApiTest.class);
 	
 	/**
 	 * Es la instancia del repositorio de consultar direcciones

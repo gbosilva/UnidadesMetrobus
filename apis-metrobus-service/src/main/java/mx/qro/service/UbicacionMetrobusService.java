@@ -1,6 +1,7 @@
 package mx.qro.service;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 import org.slf4j.Logger;
@@ -121,17 +122,20 @@ public class UbicacionMetrobusService implements IUbicacionMetrobusService {
 				//entonces agrega esa unidad a la lista de retorno
 				Integer codigoPostal = buscaCodigoPostalEnDireccion(result);
 				if(codigoPostal != 0) {
+					cuentaMatch ++;
 					//Si encontro nombre, entonces busca el objeto alcaldia
 					//y se lo agrega al objeto ubicacion para guardar en bd
 					Alcaldia alcaldia = iAlcaldiaRepository
 							.encuentraAlcaldiaPorCodigoPostal(codigoPostal);
 					ubicacionMetrobus.setAlcaldia(alcaldia);
 					iUbicacionMetrobusRepository.save(ubicacionMetrobus);
-					cuentaMatch ++;
 					break;
 				}
 			}
 		}
+		//Actualiza total de unidades en alcaldias
+		actualizaTotal();
+		
 		LOGGER.info("Consultas al api: {}", consultasAPI);
 		LOGGER.info("Consultas encontradas: {}", cuentaMatch);
 		LOGGER.info("Direcciones: {}", direccionList);
@@ -199,18 +203,20 @@ public class UbicacionMetrobusService implements IUbicacionMetrobusService {
 				//Si direccion contiene el nombre (rango de codigos postales) de la alcaldia
 				//entonces agrega esa unidad a la lista de retorno
 				if(buscaNombreEnDireccion(result.getFormattedAddress(), nombre)) {
+					cuentaMatch ++;
 					ubicacionesList.add(ubicacionMetrobus);
 					//Si encontro nombre, entonces busca el objeto alcaldia
 					//y se lo agrega al objeto ubicacion para guardar en bd
 					Alcaldia alcaldia = iAlcaldiaRepository.findByNombre(nombre);
 					ubicacionMetrobus.setAlcaldia(alcaldia);
 					iUbicacionMetrobusRepository.save(ubicacionMetrobus);
-					cuentaMatch ++;
 					break;
 				}
 				
 			}
 		}
+		//Actualiza total de unidades en alcaldias
+		actualizaTotal();
 		LOGGER.info("Consultas al api: {}", consultasAPI);
 		LOGGER.info("Consultas encontradas: {}", cuentaMatch);
 	}
@@ -270,6 +276,22 @@ public class UbicacionMetrobusService implements IUbicacionMetrobusService {
 			
 		}
 		return 0;
+	}
+	
+	/**
+	 * Metodo para actualizar el numero total de unidades por alcaldia
+	 */
+	public void actualizaTotal() {
+		//Actualiza total de unidades en alcaldias
+		List<Alcaldia> alcaldialist = (List<Alcaldia>) iAlcaldiaRepository.findAll();
+		Integer id = 1;
+		for (Alcaldia alcaldia : alcaldialist) {
+			
+			Integer total = iUbicacionMetrobusRepository.cuentaAlcaldias(id);
+			alcaldia.setTotal(total);
+			iAlcaldiaRepository.save(alcaldia);
+			id ++;
+		}
 	}
 
 	/**

@@ -52,4 +52,5 @@ public interface IUbicacionMetrobusService {
 	 * @return objeto Alcaldia
 	 */
 	List<Alcaldia> buscaAlcaldiasDisponibles();
+
 }

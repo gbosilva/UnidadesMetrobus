@@ -58,5 +58,11 @@ public class Alcaldia implements Serializable {
 	@OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
 	@JoinColumn(name = "id_alcaldia")
 	private Set<CodigoPostal> codigosPostales;
+	
+	/**
+	 * total de unidades
+	 */
+	@Column
+	private Integer total;
 
 }

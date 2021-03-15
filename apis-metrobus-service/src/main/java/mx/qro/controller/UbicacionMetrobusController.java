@@ -77,7 +77,8 @@ public class UbicacionMetrobusController {
 	
 	/**
 	 * Metodo para consultar el historial de una unidad
-	 * @param id identificador unico de la unidad
+	 * @param vehicleId identificador unico de la unidad
+	 * @param nombre identificador unico de la unidad
 	 * @return ResponseEntity<Object> con el objeto
 	 */
 	@RequestMapping(method = RequestMethod.GET
@@ -108,15 +109,13 @@ public class UbicacionMetrobusController {
 	}
 	
 	/**
-	 * Metodo para consultar las unidades dentro de una alcaldia
-	 * @param id de la alcaldia
-	 * @param nombre nombre de la alcaldia
+	 * Metodo para consultar las alcaldias disponibles
 	 * @return ResponseEntity<Object> con el objeto
 	 */
 	@RequestMapping(value = "/alcaldias",method = RequestMethod.GET
 			, produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<Object> buscaAlcaldiasDisponibles() {
-		LOGGER.info("Buscando alcaldia disponibles");
+		LOGGER.info("Buscando alcaldias disponibles");
 		//Objeto de respuesta
 		ResponseEntity<Object> response = null;
 		List<Alcaldia> alcaldiaList = new ArrayList<>();
@@ -127,4 +126,5 @@ public class UbicacionMetrobusController {
 		}
 		return response;
 	}
+
 }
