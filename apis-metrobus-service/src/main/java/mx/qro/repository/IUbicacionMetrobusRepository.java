@@ -7,6 +7,7 @@ import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import mx.qro.model.Alcaldia;
 import mx.qro.model.UbicacionMetrobus;
 
 /**
@@ -43,8 +44,8 @@ public interface IUbicacionMetrobusRepository extends CrudRepository<UbicacionMe
 	 * @return objeto de ubicacion
 	 */
 	@Query(value = "SELECT u FROM UbicacionMetrobus u "
-			+ "WHERE u.id =  :id")
-	UbicacionMetrobus buscaUnidadPorId(@Param("id") Long id);
+			+ "WHERE u.vehicleId =  :vehicleId")
+	List<UbicacionMetrobus> buscaUnidadPorVehicleId(@Param("vehicleId") Integer vehicleId);
 
 	/**
 	 * Metodo que consulta unidades por alcaldia
@@ -62,5 +63,17 @@ public interface IUbicacionMetrobusRepository extends CrudRepository<UbicacionMe
 	@Query(value = "SELECT u FROM UbicacionMetrobus u "
 			+ "WHERE u.alcaldia is null")
 	List<UbicacionMetrobus> buscaUnidadesSinAlcaldia();
+	
+	/**
+	 * Metodo para buscar alcaldias disponibles, es decir,
+	 * busca todas las ubicaciones y revisa cuales ya tienen una alcaldia
+	 * asignada 
+	 * @return Lista de alcaldias
+	 */
+	@Query(value = "SELECT a FROM UbicacionMetrobus u "
+			+ "JOIN u.alcaldia a "
+			+ "WHERE a IS NOT NULL "
+			+ "GROUP BY a.idAlcaldia")
+	List<Alcaldia> encuentraAlcaldiasDisponibles();
 
 }

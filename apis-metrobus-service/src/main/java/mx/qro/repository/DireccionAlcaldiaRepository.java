@@ -51,7 +51,6 @@ public class DireccionAlcaldiaRepository implements IDireccionAlcaldiaRepository
 		LOG.info("-->>	Inicia consumo del api");
 		
 		Direccion direccion = restTemplate.getForObject(url, Direccion.class);
-		
 		return direccion;
 	}
 }

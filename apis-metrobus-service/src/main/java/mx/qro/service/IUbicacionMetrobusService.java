@@ -2,6 +2,7 @@ package mx.qro.service;
 
 import java.util.List;
 
+import mx.qro.model.Alcaldia;
 import mx.qro.model.UbicacionMetrobus;
 
 /**
@@ -32,10 +33,10 @@ public interface IUbicacionMetrobusService {
 	
 	/**
 	 * Metodo para buscar una unidad filtrando por el id
-	 * @param ubicacionMetrobus objeto de transporte de datos
+	 * @param vehicleId de la unidad a buscar
 	 * @return objeto UbicacionMetrobus
 	 */
-	UbicacionMetrobus buscaPorId(UbicacionMetrobus ubicacionMetrobus);
+	List<UbicacionMetrobus> buscaPorId(Integer vehicleId);
 
 	/**
 	 * Metodo para buscar una lista de unidades que pertenezcan a la 
@@ -45,4 +46,10 @@ public interface IUbicacionMetrobusService {
 	 * @return objeto UbicacionMetrobus
 	 */
 	List<UbicacionMetrobus> buscaPorNombre(String nombre);
+
+	/**
+	 * Metodo para buscar una lista de alcaldias disponibles
+	 * @return objeto Alcaldia
+	 */
+	List<Alcaldia> buscaAlcaldiasDisponibles();
 }

@@ -39,9 +39,9 @@ public class ApiTest {
 	 */
 	@Test
 	public void pruebaConsumoApi() {
-		Direccion direccion = iAlcaldiaService.consultaAlcaldiaPorAPI("19.2926006317,-99.1774978638");
+		Direccion direccion = iAlcaldiaService.consultaAlcaldiaPorAPI("19.3174991608,-99.1877975464");
 		LOG.info("DireccionTest: {}", direccion.getResults().size());
+		LOG.info("DireccionTest: {}", direccion.getResults());
 	}
 	
-
 }

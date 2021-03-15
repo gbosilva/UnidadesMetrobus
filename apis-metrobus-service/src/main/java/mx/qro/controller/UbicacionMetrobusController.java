@@ -9,12 +9,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import mx.qro.model.Alcaldia;
 import mx.qro.model.UbicacionMetrobus;
 import mx.qro.service.IUbicacionMetrobusService;
 import mx.qro.util.StringUtil;
@@ -59,7 +59,7 @@ public class UbicacionMetrobusController {
 	 */
 	@RequestMapping(value = "/list", method = RequestMethod.GET
 			, produces = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<Object> consultaCuentas(){
+	public ResponseEntity<Object> buscaUnidadesDisponibles(){
 		LOGGER.info("-->	Operacion consultar unidades disponibles iniciada");
 		//Objeto de respuesta
 		ResponseEntity<Object> response = null;
@@ -80,23 +80,28 @@ public class UbicacionMetrobusController {
 	 * @param id identificador unico de la unidad
 	 * @return ResponseEntity<Object> con el objeto
 	 */
-	@RequestMapping(value = "/unidad/{id}", method = RequestMethod.GET
+	@RequestMapping(method = RequestMethod.GET
 			, produces = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<Object> consultaUnidad(
-			@PathVariable(value = "id") Long id) {
+	public ResponseEntity<Object> buscaUnidadesPorFiltro(
+			@RequestParam(value = "vehicleId", required = false) Integer vehicleId
+			, @RequestParam(value = "nombre", required = false) String nombre) {
 		//Objeto de respuesta
 		ResponseEntity<Object> response = null;
-		LOGGER.info("-->	Operacion consultar unidad por id iniciada");
 		//Objeto para estatus Http
 		HttpStatus estatus = null;
-		//Objeto AccountDTO
-		UbicacionMetrobus unidad = new UbicacionMetrobus();
-		unidad.setId(id);
-		unidad = iUbicacionMetrobusService.buscaPorId(unidad);
-		if(unidad.getId() != null) {
+		List<UbicacionMetrobus> listResult = new ArrayList<UbicacionMetrobus>();
+		if(vehicleId != null) {
+			LOGGER.info("Buscando unidad por id");
+			listResult = iUbicacionMetrobusService.buscaPorId(vehicleId);
+		} else if(!StringUtil.isBlank(nombre)) {
+			LOGGER.info("Buscando unidades por alcaldia");
+			listResult = iUbicacionMetrobusService
+					.buscaPorNombre(StringUtil.cleanString(nombre));
+		}
+		if(listResult != null) {
 			//Estatus http ok
 			estatus = HttpStatus.OK;
-			response = ResponseEntity.status(estatus).body(unidad);
+			response = ResponseEntity.status(estatus).body(listResult);
 			return response;
 		}
 		return response;
@@ -108,18 +113,16 @@ public class UbicacionMetrobusController {
 	 * @param nombre nombre de la alcaldia
 	 * @return ResponseEntity<Object> con el objeto
 	 */
-	@RequestMapping(value = "/alcaldia/{nombre}",method = RequestMethod.GET
+	@RequestMapping(value = "/alcaldias",method = RequestMethod.GET
 			, produces = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<Object> consultaPorFiltro(
-			@PathVariable(value = "nombre") String nombre) {
-		LOGGER.info("Operacion consultar unidades por alcaldia iniciada");
+	public ResponseEntity<Object> buscaAlcaldiasDisponibles() {
+		LOGGER.info("Buscando alcaldia disponibles");
 		//Objeto de respuesta
 		ResponseEntity<Object> response = null;
-		List<UbicacionMetrobus> unidadesList = new ArrayList<>();
-		unidadesList = iUbicacionMetrobusService
-				.buscaPorNombre(StringUtil.cleanString(nombre));
-		if(unidadesList.size() != 0) {
-			response = ResponseEntity.status(HttpStatus.OK).body(unidadesList);
+		List<Alcaldia> alcaldiaList = new ArrayList<>();
+		alcaldiaList = iUbicacionMetrobusService.buscaAlcaldiasDisponibles();
+		if(alcaldiaList.size() != 0) {
+			response = ResponseEntity.status(HttpStatus.OK).body(alcaldiaList);
 			return response;
 		}
 		return response;

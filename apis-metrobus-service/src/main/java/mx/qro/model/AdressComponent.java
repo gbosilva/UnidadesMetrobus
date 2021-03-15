@@ -8,11 +8,12 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
+import mx.qro.model.Enum.Type;
 
 /**
 * Queretaro Mexico<br>
 * <br><b>Project:</b> apis-metrobus-service
-* <br><b>Class:</b> Result.java
+* <br><b>Class:</b> AdressComponent.java
 * <br><b>Description:</b>
 * Clase que contendra los datos referentes a la direccion
 *
@@ -30,23 +31,28 @@ import lombok.ToString;
 @Getter
 @Setter
 @ToString
-public class Result implements Serializable {
-
+public class AdressComponent implements Serializable {
+	
 	/**
 	 * The serialVersionUID
 	 */
-	private static final long serialVersionUID = -307925579925986339L;
+	private static final long serialVersionUID = 2608007267600265820L;
 	
 	/**
-	 * Arreglo de direcciones
+	 * Nombre largo
 	 */
-	@JsonProperty("address_components")
-	private List<AdressComponent> adressComponents;
+	@JsonProperty("long_name")
+	private String longName;
 	
 	/**
-	 * La direccion en formato
+	 * Nombre corto
 	 */
-	@JsonProperty("formatted_address")
-	private String formattedAddress;
+	@JsonProperty("short_name")
+	private String shortName;
 	
+	/**
+	 * Enum types
+	 */
+	private List<Type> types;
+
 }

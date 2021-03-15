@@ -8,12 +8,14 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import mx.qro.model.AdressComponent;
 import mx.qro.model.Alcaldia;
 import mx.qro.model.CodigoPostal;
 import mx.qro.model.Direccion;
 import mx.qro.model.Result;
 import mx.qro.model.UbicacionMetrobus;
 import mx.qro.repository.IAlcaldiaRepository;
+import mx.qro.repository.ICodigoPostalRepository;
 import mx.qro.repository.IUbicacionMetrobusRepository;
 
 /**
@@ -60,6 +62,12 @@ public class UbicacionMetrobusService implements IUbicacionMetrobusService {
 	 */
 	@Autowired
 	private IDireccionAlcaldiaService iAlcaldiaService;
+
+	/**
+	 * Es la instancia del servicio de codigos postales
+	 */
+	@Autowired
+	private ICodigoPostalRepository iCodigoPostalRepository;
 	
 	/**
 	 * Metodo para buscar todas las ubidades disponibles
@@ -69,26 +77,73 @@ public class UbicacionMetrobusService implements IUbicacionMetrobusService {
 	public List<UbicacionMetrobus> buscaUnidadesDisponibles() {
 		List<UbicacionMetrobus> unidadesList = 
 				iUbicacionMetrobusRepository.buscaUnidadesDisponibles();
-		LOGGER.info("-->>	Unidades encontradas: {}", unidadesList);
+		LOGGER.info("-->>	Unidades localizadas");
 		return unidadesList;
 	}
 	
 	/**
 	 * Metodo para buscar una unidad filtrando por el id
-	 * @param ubicacionMetrobus objeto de transporte de datos
+	 * @param vehicleId de la unidad a buscar
 	 * @return objeto UbicacionMetrobus
 	 */
 	@Override
-	public UbicacionMetrobus buscaPorId(UbicacionMetrobus ubicacionMetrobus) {
-		ubicacionMetrobus = iUbicacionMetrobusRepository
-				.buscaUnidadPorId(ubicacionMetrobus.getId());
-		LOGGER.info("-->>	Unidad localizada");
-		return ubicacionMetrobus;
+	public List<UbicacionMetrobus> buscaPorId(Integer vehicleId) {
+		List<UbicacionMetrobus> unidadesList = iUbicacionMetrobusRepository
+				.buscaUnidadPorVehicleId(vehicleId);
+		LOGGER.info("-->>	Unidades localizadas");
+		return unidadesList;
 	}
-
+	
+	/**
+	 * Metodo para buscar una lista de alcaldias disponibles
+	 * @return objeto Alcaldia
+	 */
+	@Override
+	public List<Alcaldia> buscaAlcaldiasDisponibles() {
+		//Busca unidades que no tengan una alcaldia guardada 
+		List<UbicacionMetrobus> unidadesList = 
+				iUbicacionMetrobusRepository.buscaUnidadesSinAlcaldia();
+		
+		List<Direccion> direccionList = new ArrayList<>();
+		int consultasAPI = 0;
+		int cuentaMatch = 0;
+		for (UbicacionMetrobus ubicacionMetrobus : unidadesList) {
+			consultasAPI ++;
+			Direccion direccion = new Direccion();
+			//Toma latitud y longitud y los pasa como parametro para
+			//consultar la alcaldia en la que se ecuentra cada unidad
+			direccion = iAlcaldiaService.consultaAlcaldiaPorAPI(
+					ubicacionMetrobus.getGeographicPoint());
+			direccionList.add(direccion);
+			for (Result result : direccion.getResults()) {
+				
+				//Si direccion contiene el nombre (rango de codigos postales) de la alcaldia
+				//entonces agrega esa unidad a la lista de retorno
+				Integer codigoPostal = buscaCodigoPostalEnDireccion(result);
+				if(codigoPostal != 0) {
+					//Si encontro nombre, entonces busca el objeto alcaldia
+					//y se lo agrega al objeto ubicacion para guardar en bd
+					Alcaldia alcaldia = iAlcaldiaRepository
+							.encuentraAlcaldiaPorCodigoPostal(codigoPostal);
+					ubicacionMetrobus.setAlcaldia(alcaldia);
+					iUbicacionMetrobusRepository.save(ubicacionMetrobus);
+					cuentaMatch ++;
+					break;
+				}
+			}
+		}
+		LOGGER.info("Consultas al api: {}", consultasAPI);
+		LOGGER.info("Consultas encontradas: {}", cuentaMatch);
+		LOGGER.info("Direcciones: {}", direccionList);
+		List<Alcaldia> alcaldiaList = 
+				iUbicacionMetrobusRepository.encuentraAlcaldiasDisponibles();
+		LOGGER.info("-->>	Alcaldias localizadas");
+		return alcaldiaList;
+	}
+	
 	/**
 	 * Metodo para buscar una lista de unidades que pertenezcan a la 
-	 * alcaldia establecida por parametro ya sea por id o por nombre
+	 * alcaldia establecida por parametro nombre
 	 * de la alcaldia
 	 * @param nombre de la alcaldia a buscar
 	 * @return objeto UbicacionMetrobus
@@ -103,22 +158,19 @@ public class UbicacionMetrobusService implements IUbicacionMetrobusService {
 		//Lista de retorno
 		List<UbicacionMetrobus> ubicacionesList = new ArrayList<>();
 		
-		//Lista para guardado de direcciones --> FormattedAddress
-		List<Direccion> direccionList = new ArrayList<>();
-		
 		//Lista para validacion previa al consumo del api
 		List<UbicacionMetrobus> alcaldiasList = iUbicacionMetrobusRepository
 				.buscaUnidadPorAlcaldia(nombre);
 		if(alcaldiasList.size() == 0) {
 			//Recorre la lista de unidades para obtener latitud y longitud
 			recorreDireccionesDeUnidades(
-					unidadesList, ubicacionesList, direccionList, nombre);
+					unidadesList, ubicacionesList, nombre);
 		} else {
-			LOGGER.info("-->>	Unidades por alcaldia encontradas desde la bd");
+			LOGGER.info("-->>	Unidades localizadas desde la bd");
 			return alcaldiasList;
 		}
 		
-		LOGGER.info("-->>	Unidades por alcaldia encontradas por consumo del api: {}", ubicacionesList);
+		LOGGER.info("-->>	Unidades localizadas");
 		return ubicacionesList;
 	}
 	
@@ -131,8 +183,7 @@ public class UbicacionMetrobusService implements IUbicacionMetrobusService {
 	 * @param nombre
 	 */
 	public void recorreDireccionesDeUnidades(List<UbicacionMetrobus> unidadesList
-			, List<UbicacionMetrobus> ubicacionesList
-			, List<Direccion> direccionList, String nombre) {
+			, List<UbicacionMetrobus> ubicacionesList, String nombre) {
 		
 		int consultasAPI = 0;
 		int cuentaMatch = 0;
@@ -143,16 +194,11 @@ public class UbicacionMetrobusService implements IUbicacionMetrobusService {
 			//consultar la alcaldia en la que se ecuentra cada unidad
 			direccion = iAlcaldiaService.consultaAlcaldiaPorAPI(
 					ubicacionMetrobus.getGeographicPoint());
-			//Guarda direcciones
-			direccionList.add(direccion);
-			LOGGER.info("-->> -->>	Valida Direcciones");
 			for (Result result : direccion.getResults()) {
 				
-				LOGGER.info("-->> -->> -->>	Inicia validacion de nombre");
 				//Si direccion contiene el nombre (rango de codigos postales) de la alcaldia
 				//entonces agrega esa unidad a la lista de retorno
 				if(buscaNombreEnDireccion(result.getFormattedAddress(), nombre)) {
-//				if(result.getFormattedAddress().contains(nombre)) {
 					ubicacionesList.add(ubicacionMetrobus);
 					//Si encontro nombre, entonces busca el objeto alcaldia
 					//y se lo agrega al objeto ubicacion para guardar en bd
@@ -160,13 +206,10 @@ public class UbicacionMetrobusService implements IUbicacionMetrobusService {
 					ubicacionMetrobus.setAlcaldia(alcaldia);
 					iUbicacionMetrobusRepository.save(ubicacionMetrobus);
 					cuentaMatch ++;
-					LOGGER.info(" -->> -->> -->> -->>	Direccion guardada ");
 					break;
 				}
-				LOGGER.info("-->> -->> -->>	Valor no valido: {}", result.getFormattedAddress());
 				
 			}
-			LOGGER.info("-->> -->>	Validando siguiente direccion");
 		}
 		LOGGER.info("Consultas al api: {}", consultasAPI);
 		LOGGER.info("Consultas encontradas: {}", cuentaMatch);
@@ -184,34 +227,56 @@ public class UbicacionMetrobusService implements IUbicacionMetrobusService {
 		
 		//Busca el codigo postal correspondiente a la alcaldia por nombre
 		CodigoPostal postalCode = iAlcaldiaRepository.encuentraCPPorNombreAlcaldia(nombre);
-		LOGGER.info("-->> -->>  Codigo Postal :{} de la alcaldia: {}", postalCode.toString(), nombre);
 		
 		//Codigo postal a validar
 		String codigoPostal = buscaCodigoPostal(formattedAddress);
 		if(codigoPostal != null) {
-			LOGGER.info("-->> -->> Codigo Postal encontrado: {}", codigoPostal);
 			
 			Integer codigoPostalEnNumero = Integer.parseInt(codigoPostal);
 			if(codigoPostalEnNumero >= Integer.parseInt(postalCode.getRangoInicial()) 
 					&& codigoPostalEnNumero <= Integer.parseInt(postalCode.getRangoFinal())) {
-				LOGGER.info("-->> -->> LOCALIZADO: {}", codigoPostal);
 				return true;
 			}
 			
-//			String alcaldia = iAlcaldiaRepository.encuentraAlcaldia(postalCode.getIdCodigoPostal());
-//			LOGGER.info("-->> -->>	Alcaldia encontrada: {}", alcaldia);
-
-		} else {
-			return false;
 		}
 		return false;
+	}
+	
+	/**
+	 * Metodo que valida si un codigo postal le pertenece a una alcaldia
+	 * buscando el rango de codigos postales
+	 * y comparando cps
+	 * @param result la direccion
+	 * @return
+	 */
+	public Integer buscaCodigoPostalEnDireccion(Result result) {
+		
+		//Busca el codigo postal correspondiente a la alcaldia por nombre
+		List<CodigoPostal> codigoPostalList = 
+				(List<CodigoPostal>) iCodigoPostalRepository.findAll();
+		
+		//Codigo postal a validar
+		String codigoPostal = buscaCodigoPostal(result.getAdressComponents());
+		if(codigoPostal != null) {
+			
+			Integer codigoPostalEnNumero = Integer.parseInt(codigoPostal);
+			for(CodigoPostal cp : codigoPostalList) {
+				
+				if(codigoPostalEnNumero >= Integer.parseInt(cp.getRangoInicial()) 
+						&& codigoPostalEnNumero <= Integer.parseInt(cp.getRangoFinal())) {
+					return cp.getIdCodigoPostal();
+				}
+			}
+			
+		}
+		return 0;
 	}
 
 	/**
 	 * Metodo que busca un codigo postal de 5 digitos de longitud dentro de una
 	 * cadena de caracteres o una direccion 
 	 * @param formattedAddress la direccion
-	 * @return true or false
+	 * @return cadena codigo postal
 	 */
 	public String buscaCodigoPostal(String formattedAddress) {
 		
@@ -228,6 +293,44 @@ public class UbicacionMetrobusService implements IUbicacionMetrobusService {
         for (int i = 0; i <lista.size(); i++) {
         	address = address.append(lista.get(i));
         }
+        
+        //Si el arreglo tiene longitud 5, entonces lo retorna
+        if(address.length() == 5) {
+        	return address.toString();
+        } else {
+        	return null;
+        }
+	}
+	
+	/**
+	 * Metodo que busca un codigo postal de 5 digitos de longitud dentro del
+	 * arreglo de AddressComponent
+	 * @param formattedAddress la direccion
+	 * @return cadena codigo postal
+	 */
+	public String buscaCodigoPostal(List<AdressComponent> adressComponents) {
+		
+		List<Character> lista = new ArrayList<>();
+		//Recorre el arreglo de direcciones
+		//Lee la cadena en busca digitos y los guarda en lista de caracteres
+		for(AdressComponent address : adressComponents) {
+			if(address.getLongName().length() == 5) {
+				
+				for(int i = 0; i< address.getLongName().length(); i ++) {
+					if(Character.isDigit(address.getLongName().charAt(i))) {
+						lista.add(address.getLongName().charAt(i));
+					}
+				}
+			}
+		}
+
+		StringBuffer address = new StringBuffer();
+		if(lista.size() != 0) {
+			//Convierte la lista encontrada a String
+			for (int i = 0; i <lista.size(); i++) {
+				address = address.append(lista.get(i));
+			}
+		}
         
         //Si el arreglo tiene longitud 5, entonces lo retorna
         if(address.length() == 5) {

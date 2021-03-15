@@ -1,9 +1,9 @@
 -->		Creacion de imagen docker
 docker build -t apis-metrobus-service-image:1.0.1 .		//	Se corre en la ruta del proyecto
 -->		Se crea tag
-docker tag apis-metrobus-service-image:1.0.9 acr/apis-metrobus-service-image:1.0.1
+docker tag apis-metrobus-service-image:1.0.9 contenedor.azurecr.io/apis-metrobus-service-image:1.0.1
 -->		Se agrega al contenedor de registros
-docker push acr/apis-metrobus-service-image:1.0.1
+docker push contenedor.azurecr.io/apis-metrobus-service-image:1.0.1
 -->		Crea deployment y service
 kubectl -n default apply -f C:\Users\yop\apis-metrobus-deployment.yml
 -->		Ver el log

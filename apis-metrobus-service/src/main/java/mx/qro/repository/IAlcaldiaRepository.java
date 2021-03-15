@@ -39,12 +39,12 @@ public interface IAlcaldiaRepository extends CrudRepository<Alcaldia, Long> {
 	/**
 	 * Metodo para buscar una alcaldia por codigo postal
 	 * @param codigoPostal
-	 * @return
+	 * @return  alcaldia
 	 */
-	@Query(value = "SELECT a.nombre FROM Alcaldia a "
+	@Query(value = "SELECT a FROM Alcaldia a "
 			+ "JOIN a.codigosPostales cp "
 			+ "WHERE cp.idCodigoPostal = :codigoPostal")
-	String encuentraAlcaldia(@Param("codigoPostal") Integer codigoPostal);
+	Alcaldia encuentraAlcaldiaPorCodigoPostal(@Param("codigoPostal") Integer codigoPostal);
 
 	/**
 	 * Metodo para buscar un codigo postal por nombre de alcaldia
@@ -55,4 +55,5 @@ public interface IAlcaldiaRepository extends CrudRepository<Alcaldia, Long> {
 			+ "JOIN a.codigosPostales cp "
 			+ "WHERE a.nombre = :nombre")
 	CodigoPostal encuentraCPPorNombreAlcaldia(@Param("nombre") String nombre);
+	
 }
