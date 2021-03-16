@@ -1,7 +1,6 @@
 package mx.qro.service;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 
 import org.slf4j.Logger;
@@ -167,8 +166,7 @@ public class UbicacionMetrobusService implements IUbicacionMetrobusService {
 				.buscaUnidadPorAlcaldia(nombre);
 		if(alcaldiasList.size() == 0) {
 			//Recorre la lista de unidades para obtener latitud y longitud
-			recorreDireccionesDeUnidades(
-					unidadesList, ubicacionesList, nombre);
+			recorreDireccionesDeUnidades(unidadesList, ubicacionesList, nombre);
 		} else {
 			LOGGER.info("-->>	Unidades localizadas desde la bd");
 			return alcaldiasList;
