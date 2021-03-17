@@ -1,0 +1,211 @@
+{
+	"info": {
+		"_postman_id": "09801298-edfa-4fb3-ad12-235508e5a119",
+		"name": "apis-ubicacion-unidades-metrobus",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "API-METROBUS",
+			"item": [
+				{
+					"name": "consulta-ubicaciones-metrobus",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "https://datos.cdmx.gob.mx/api/3/action/datastore_search?resource_id=ad360a0e-b42f-482c-af12-1fd72140032e&limit=2",
+							"protocol": "https",
+							"host": [
+								"datos",
+								"cdmx",
+								"gob",
+								"mx"
+							],
+							"path": [
+								"api",
+								"3",
+								"action",
+								"datastore_search"
+							],
+							"query": [
+								{
+									"key": "resource_id",
+									"value": "ad360a0e-b42f-482c-af12-1fd72140032e"
+								},
+								{
+									"key": "limit",
+									"value": "2"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Geocoding reverse",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"pm.environment.set(\"lat\", \"19.3826007843\");\r",
+									"pm.environment.set(\"lng\", \"-99.0613021851\");\r",
+									"pm.environment.set(\"key\", \"\");"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "https://maps.googleapis.com/maps/api/geocode/json?latlng={{lat}},{{lng}}&key={{key}}",
+							"protocol": "https",
+							"host": [
+								"maps",
+								"googleapis",
+								"com"
+							],
+							"path": [
+								"maps",
+								"api",
+								"geocode",
+								"json"
+							],
+							"query": [
+								{
+									"key": "latlng",
+									"value": "{{lat}},{{lng}}"
+								},
+								{
+									"key": "key",
+									"value": "{{key}}"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "API",
+			"item": [
+				{
+					"name": "unidades-disponibles",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "https://localhost:8091/ubicaciones/list",
+							"protocol": "https",
+							"host": [
+								"localhost"
+							],
+							"port": "8091",
+							"path": [
+								"ubicaciones",
+								"list"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "historial-unidad-por-id",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"pm.environment.set(\"vehicleId\", 177);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "https://localhost:8091/ubicaciones?vehicleId={{vehicleId}}",
+							"protocol": "https",
+							"host": [
+								"localhost"
+							],
+							"port": "8091",
+							"path": [
+								"ubicaciones"
+							],
+							"query": [
+								{
+									"key": "vehicleId",
+									"value": "{{vehicleId}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "alcaldias-disponibles",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "https://localhost:8091/ubicaciones/alcaldias",
+							"protocol": "https",
+							"host": [
+								"localhost"
+							],
+							"port": "8091",
+							"path": [
+								"ubicaciones",
+								"alcaldias"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "unidades-por-alcaldia",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"pm.environment.set(\"nombre\", \"Miguel Hidalgo\");"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "https://localhost:8091/ubicaciones?nombre={{nombre}}",
+							"protocol": "https",
+							"host": [
+								"localhost"
+							],
+							"port": "8091",
+							"path": [
+								"ubicaciones"
+							],
+							"query": [
+								{
+									"key": "nombre",
+									"value": "{{nombre}}"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	]
+}
