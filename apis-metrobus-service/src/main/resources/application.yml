@@ -26,10 +26,10 @@ spring:
       fail-on-empty-beans: false
   #JPA
   jpa:
-    generate-ddl: true
-    show-sql: true
-    hibernate:
-      ddl-auto: update
+    #generate-ddl: true
+    #show-sql: true
+    #hibernate:
+    #  ddl-auto: update
     database-platform: org.hibernate.dialect.MySQL5Dialect
     properties:
       hibernate:

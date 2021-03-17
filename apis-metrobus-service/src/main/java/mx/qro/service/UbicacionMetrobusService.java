@@ -137,7 +137,7 @@ public class UbicacionMetrobusService implements IUbicacionMetrobusService {
 		
 		LOGGER.info("Consultas al api: {}", consultasAPI);
 		LOGGER.info("Consultas encontradas: {}", cuentaMatch);
-		LOGGER.info("Direcciones: {}", direccionList);
+//		LOGGER.info("Direcciones: {}", direccionList);
 		List<Alcaldia> alcaldiaList = 
 				iUbicacionMetrobusRepository.encuentraAlcaldiasDisponibles();
 		LOGGER.info("-->>	Alcaldias localizadas");
@@ -200,7 +200,7 @@ public class UbicacionMetrobusService implements IUbicacionMetrobusService {
 				
 				//Si direccion contiene el nombre (rango de codigos postales) de la alcaldia
 				//entonces agrega esa unidad a la lista de retorno
-				if(buscaNombreEnDireccion(result.getFormattedAddress(), nombre)) {
+				if(buscaCPEnDireccion(result.getFormattedAddress(), nombre)) {
 					cuentaMatch ++;
 					ubicacionesList.add(ubicacionMetrobus);
 					//Si encontro nombre, entonces busca el objeto alcaldia
@@ -227,7 +227,7 @@ public class UbicacionMetrobusService implements IUbicacionMetrobusService {
 	 * @param nombre a validar
 	 * @return
 	 */
-	public Boolean buscaNombreEnDireccion(String formattedAddress, String nombre) {
+	public Boolean buscaCPEnDireccion(String formattedAddress, String nombre) {
 		
 		//Busca el codigo postal correspondiente a la alcaldia por nombre
 		CodigoPostal postalCode = iAlcaldiaRepository.encuentraCPPorNombreAlcaldia(nombre);
