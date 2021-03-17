@@ -1,5 +1,9 @@
 -->		Creacion de imagen docker
-docker build -t apis-metrobus-service-image:1.0.1 .		//	Se corre en la ruta del proyecto
+docker build -t apis-metrobus-service-image:1.0.3 .						//	Se corre en la ruta del proyecto
+docker network create --driver=bridge --subnet=192.168.0.0/16 metrobus	//crear red
+docker run --name apis-metrobus-service --network metrobus -p 8091:8091 apis-metrobus-service-image:1.0.3		//Correr en la red creada
+docker run --name apis-metrobus-service -p 8091:8091 apis-metrobus-service-image:1.0.1
+docker run apis-metrobus-service-image:1.0.3
 -->		Se crea tag
 docker tag apis-metrobus-service-image:1.0.9 contenedor.azurecr.io/apis-metrobus-service-image:1.0.1
 -->		Se agrega al contenedor de registros
